@@ -80,13 +80,15 @@ function Home() {
   // Keep the same key when retrying an uncertain payment.
   const [paymentKeys, setPaymentKeys] = useState<Record<string, string>>({})
 
-  async function refreshBalances(homeId: string) {
-    const result = await apiRequest<Balance[]>(
-      `/api/homes/${homeId}/balances`,
-    )
-    setBalances(result)
-  }
+async function refreshBalances() {
+  if (!home) return
 
+  const response = await apiRequest<{ balances: Balance[] }>(
+    `/api/homes/${home.id}/balances`,
+  )
+
+  setBalances(response.balances)
+}
   async function createHome(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setError('')
