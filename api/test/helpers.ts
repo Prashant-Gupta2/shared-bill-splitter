@@ -37,16 +37,44 @@ function parseJson(text: string): unknown {
 }
 
 export async function createHome(memberNames: string[]) {
-  const home = await call<{ id: string; name: string }>('POST', '/api/homes', {
-    body: { name: 'Test home' },
-  })
+  const home = await call<{ id: string; name: string }>(
+    'POST',
+    '/api/homes',
+    {
+      body: { name: 'Test home' },
+    },
+  )
+
+  // Debug API response
+  console.log('Create home status:', home.status)
+  console.log('Create home response:', home.body)
+
+  if (home.status !== 201 || !home.body?.id) {
+    throw new Error(
+      `Home creation failed: ${JSON.stringify(home)}`,
+    )
+  }
+
   const members: Member[] = []
+
   for (const name of memberNames) {
-    const member = await call<Member>('POST', `/api/homes/${home.body.id}/members`, {
-      body: { name },
-    })
+    const member = await call<Member>(
+      'POST',
+      `/api/homes/${home.body.id}/members`,
+      {
+        body: { name },
+      },
+    )
+
+    if (!member.body?.id) {
+      throw new Error(
+        `Member creation failed: ${JSON.stringify(member)}`,
+      )
+    }
+
     members.push(member.body)
   }
+
   return { homeId: home.body.id, members }
 }
 
